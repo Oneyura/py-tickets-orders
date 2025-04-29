@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db.models import Count, F
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
 
 from cinema.models import (
     Genre,
@@ -29,6 +30,12 @@ from cinema.serializers import (
     OrderListSerializer,
     OrderCreateSerializer,
 )
+
+
+class OrderPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -126,6 +133,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.select_related("user").prefetch_related("tickets")
+    pagination_class = OrderPagination
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
